@@ -151,13 +151,32 @@ q6_df<-q6 %>%
   bind_rows
 
 
+q7<- read_html("http://www.curatedquotes.com/inspirational-quotes/") %>% 
+  html_nodes("blockquote") %>% 
+  html_nodes("p")
+  
+q7_quote <- q7 %>% 
+  as.character %>% 
+  gsub("<cite>.+</cite>","",.) %>% paste(.,collapse="") %>% 
+  read_html %>%
+  html_nodes("p") %>% 
+  html_text() %>% 
+  gsub("\\t","",.)
+
+q7_author <- q7 %>% 
+  html_nodes("cite")%>%
+  html_text()%>% 
+  gsub("\\t","",.) %>% 
+  trimws(x)
+
+q7_df<-data.frame(Quote=q7_quote, Author=q7_author,stringsAsFactors = FALSE)
+
 
 quote_list<-eval(parse(text=paste("bind_rows(list(",paste(ls()[grep("_df",ls())],collapse=", "),"))")))
 
 #Number of distinct quotes
 table(!duplicated(quote_list$Quote))
 
-table(!duplicated(tolower(quote_list$Author[!(is.na(quote_list$Author) | grepl("unknown",quote_list$Author))])))
-
+write.csv(quote_list,"quotes.csv")
 
 
